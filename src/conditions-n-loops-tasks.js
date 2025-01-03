@@ -288,8 +288,41 @@ function getBalanceIndex(arr) {
  *          [10, 9,  8,  7]
  *        ]
  */
-function getSpiralMatrix(/* size */) {
-  throw new Error('Not implemented');
+function getSpiralMatrix(size) {
+  const dir = {
+    up: [-1, 0],
+    down: [1, 0],
+    left: [0, -1],
+    right: [0, 1],
+  };
+
+  const matrix = [];
+  for (let i = 0; i < size; i += 1) {
+    matrix[i] = [];
+  }
+
+  for (let turn = 0, elem = 1; ; turn += 1) {
+    const itemsPerTurnEdge = Math.max(size - 2 * turn, 0);
+    if (!itemsPerTurnEdge) {
+      break;
+    }
+    const itemsPerTurn = (itemsPerTurnEdge - 1) * 4 || 1;
+    const [min, max] = [turn, turn + itemsPerTurnEdge - 1];
+    let [row, col] = [turn, turn];
+    let [dr, dc] = dir.right;
+
+    for (let i = 0; i < itemsPerTurn; i += 1, elem += 1, row += dr, col += dc) {
+      if (row === min && col === max) {
+        [dr, dc] = dir.down;
+      } else if (row === max && col === max) {
+        [dr, dc] = dir.left;
+      } else if (row === max && col === min) {
+        [dr, dc] = dir.up;
+      }
+      matrix[row][col] = elem;
+    }
+  }
+  return matrix;
 }
 
 /**
@@ -309,6 +342,14 @@ function getSpiralMatrix(/* size */) {
  */
 function rotateMatrix(/* matrix */) {
   throw new Error('Not implemented');
+  // const size = matrix[0]?.length ?? 0;
+
+  // for (let turn = 0; ; turn += 1) {
+  //   const itemsPerTurnEdge = Math.max(size - 2 * turn, 0);
+  //   if (!itemsPerTurnEdge) {
+  //     break;
+  //   }
+  // }
 }
 
 /**

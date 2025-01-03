@@ -340,16 +340,31 @@ function getSpiralMatrix(size) {
  *    [7, 8, 9]         [9, 6, 3]
  *  ]                 ]
  */
-function rotateMatrix(/* matrix */) {
-  throw new Error('Not implemented');
-  // const size = matrix[0]?.length ?? 0;
+function rotateMatrix(matrix) {
+  const mx = matrix;
+  const size = mx[0]?.length ?? 0;
 
-  // for (let turn = 0; ; turn += 1) {
-  //   const itemsPerTurnEdge = Math.max(size - 2 * turn, 0);
-  //   if (!itemsPerTurnEdge) {
-  //     break;
-  //   }
-  // }
+  for (let turn = 0; ; turn += 1) {
+    const itemsPerTurnEdge = Math.max(size - 2 * turn, 0);
+    if (!itemsPerTurnEdge) {
+      break;
+    }
+    const swapCycleLen = itemsPerTurnEdge - 1;
+    for (let i = 0, row = turn, col = row, c = swapCycleLen; i < c; i += 1) {
+      [
+        mx[row + i][col + c],
+        mx[row + c][col + c - i],
+        mx[row + c - i][col],
+        mx[row][col + i],
+      ] = [
+        mx[row][col + i],
+        mx[row + i][col + c],
+        mx[row + c][col + c - i],
+        mx[row + c - i][col],
+      ];
+    }
+  }
+  return mx;
 }
 
 /**

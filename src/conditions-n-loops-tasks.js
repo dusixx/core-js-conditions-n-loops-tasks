@@ -8,7 +8,7 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/switch       *
  *                                                                                           *
  ******************************************************************************************* */
-
+const { strUtils, mathUtils, mxUtils } = require('./helpers');
 /**
  * Determines whether a given number is positive. Zero is considered positive.
  * This function does not use Number or Math class methods.
@@ -87,12 +87,8 @@ function canQueenCaptureKing(queen, king) {
  *  2, 2, 5   => false
  *  3, 0, 3   => false
  */
-const isTriangle = (a, b, c) => {
-  return a + b > c && c + b > a && c + a > b;
-};
-
 function isIsoscelesTriangle(a, b, c) {
-  return isTriangle(a, b, c) && (a === b || a === c || b === c);
+  return mathUtils.isTriangle(a, b, c) && (a === b || a === c || b === c);
 }
 
 /**
@@ -109,17 +105,12 @@ function isIsoscelesTriangle(a, b, c) {
  *  10  => X
  *  26  => XXVI
  */
-const repeat = (ch, count) => {
-  let res = ``;
-  for (let i = 0; i < count; i += 1) {
-    res += ch;
-  }
-  return res;
-};
-
 function convertToRomanNumerals(num) {
   const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
-  return `${repeat('X', Math.floor(num / 10))}${romans[(num % 10) - 1] ?? ''}`;
+
+  return `${strUtils.rep('X', Math.floor(num / 10))}${
+    romans[(num % 10) - 1] ?? ''
+  }`;
 }
 
 /**
@@ -253,11 +244,8 @@ function isContainNumber(num, digit) {
  *  [1, 2, 3, 4, 5] => -1   => no balance element
  */
 function getBalanceIndex(arr) {
-  let totalSum = arr[0];
+  const totalSum = mathUtils.sum(...arr);
 
-  for (let i = 1; i < arr.length; i += 1) {
-    totalSum += arr[i];
-  }
   for (let i = 1, leftSum = arr[0]; i < arr.length; i += 1) {
     if (leftSum === totalSum - leftSum - arr[i]) {
       return i;
@@ -289,29 +277,19 @@ function getBalanceIndex(arr) {
  *        ]
  */
 function getSpiralMatrix(size) {
-  const dir = {
-    up: [-1, 0],
-    down: [1, 0],
-    left: [0, -1],
-    right: [0, 1],
-  };
-
-  const matrix = [];
-  for (let i = 0; i < size; i += 1) {
-    matrix[i] = [];
-  }
+  const mx = mxUtils.create(size);
+  const { direction: dir } = mxUtils;
 
   for (let turn = 0, elem = 1; ; turn += 1) {
-    const itemsPerTurnEdge = Math.max(size - 2 * turn, 0);
-    if (!itemsPerTurnEdge) {
+    const { sizePerTurn, itemsPerTurn } = mxUtils.getItemsCount(size, turn);
+    if (!sizePerTurn) {
       break;
     }
-    const itemsPerTurn = (itemsPerTurnEdge - 1) * 4 || 1;
-    const [min, max] = [turn, turn + itemsPerTurnEdge - 1];
+    const [min, max] = [turn, turn + sizePerTurn - 1];
     let [row, col] = [turn, turn];
     let [dr, dc] = dir.right;
 
-    for (let i = 0; i < itemsPerTurn; i += 1, elem += 1, row += dr, col += dc) {
+    for (let i = itemsPerTurn; i; i -= 1, elem += 1, row += dr, col += dc) {
       if (row === min && col === max) {
         [dr, dc] = dir.down;
       } else if (row === max && col === max) {
@@ -319,10 +297,10 @@ function getSpiralMatrix(size) {
       } else if (row === max && col === min) {
         [dr, dc] = dir.up;
       }
-      matrix[row][col] = elem;
+      mx[row][col] = elem;
     }
   }
-  return matrix;
+  return mx;
 }
 
 /**
@@ -341,16 +319,13 @@ function getSpiralMatrix(size) {
  *  ]                 ]
  */
 function rotateMatrix(matrix) {
-  const mx = matrix;
-  const size = mx[0]?.length ?? 0;
-
-  for (let turn = 0; ; turn += 1) {
-    const itemsPerTurnEdge = Math.max(size - 2 * turn, 0);
-    if (!itemsPerTurnEdge) {
+  for (let turn = 0, mx = matrix, sz = mx[0]?.length; ; turn += 1) {
+    const { sizePerTurn } = mxUtils.getItemsCount(sz, turn);
+    if (!sizePerTurn) {
       break;
     }
-    const swapCycleLen = itemsPerTurnEdge - 1;
-    for (let i = 0, row = turn, col = row, c = swapCycleLen; i < c; i += 1) {
+    const [c, row, col] = [sizePerTurn - 1, turn, turn];
+    for (let i = c; i; i -= 1) {
       [
         mx[row + i][col + c],
         mx[row + c][col + c - i],
@@ -364,7 +339,7 @@ function rotateMatrix(matrix) {
       ];
     }
   }
-  return mx;
+  return matrix;
 }
 
 /**
@@ -429,17 +404,6 @@ function sortByAsc(arr) {
  *  '012345', 3 => '024135' => '043215' => '031425'
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
-const shuffle = (str) => {
-  let even = '';
-  let odd = '';
-
-  for (let i = 0; i < str.length; i += 2) {
-    even += str[i];
-    odd += str[i + 1] ?? '';
-  }
-  return `${even}${odd}`;
-};
-
 function shuffleChar(str, iterations) {
   let res = str;
   let iters = iterations;
@@ -451,7 +415,7 @@ function shuffleChar(str, iterations) {
   iters %= me.fullCycle[len] ?? Infinity;
 
   for (let i = 1; i <= iters; i += 1) {
-    res = shuffle(res);
+    res = strUtils.shuffle(res);
 
     if (res === str) {
       me.fullCycle[len] = i;

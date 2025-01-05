@@ -8,7 +8,11 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/switch       *
  *                                                                                           *
  ******************************************************************************************* */
-const { strUtils, mathUtils, mxUtils } = require('./helpers');
+const {
+  strUtils: { rep: repStr, shuffle },
+  mathUtils: { isTriangle, sum },
+  mxUtils: { create: createMx, getItemsCount, direction },
+} = require('./helpers');
 /**
  * Determines whether a given number is positive. Zero is considered positive.
  * This function does not use Number or Math class methods.
@@ -88,7 +92,7 @@ function canQueenCaptureKing(queen, king) {
  *  3, 0, 3   => false
  */
 function isIsoscelesTriangle(a, b, c) {
-  return mathUtils.isTriangle(a, b, c) && (a === b || a === c || b === c);
+  return isTriangle(a, b, c) && (a === b || a === c || b === c);
 }
 
 /**
@@ -108,9 +112,7 @@ function isIsoscelesTriangle(a, b, c) {
 function convertToRomanNumerals(num) {
   const romans = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
 
-  return `${strUtils.rep('X', Math.floor(num / 10))}${
-    romans[(num % 10) - 1] ?? ''
-  }`;
+  return `${repStr('X', Math.floor(num / 10))}${romans[(num % 10) - 1] ?? ''}`;
 }
 
 /**
@@ -244,7 +246,7 @@ function isContainNumber(num, digit) {
  *  [1, 2, 3, 4, 5] => -1   => no balance element
  */
 function getBalanceIndex(arr) {
-  const totalSum = mathUtils.sum(...arr);
+  const totalSum = sum(...arr);
 
   for (let i = 1, leftSum = arr[0]; i < arr.length; i += 1) {
     if (leftSum === totalSum - leftSum - arr[i]) {
@@ -276,26 +278,26 @@ function getBalanceIndex(arr) {
  *          [10, 9,  8,  7]
  *        ]
  */
-function getSpiralMatrix(size) {
-  const mx = mxUtils.create(size);
-  const { direction: dir } = mxUtils;
+function getSpiralMatrix(size, clockwise = true) {
+  const mx = createMx(size);
+  const dir = direction;
 
   for (let turn = 0, elem = 1; ; turn += 1) {
-    const { sizePerTurn, itemsPerTurn } = mxUtils.getItemsCount(size, turn);
+    const { sizePerTurn, itemsPerTurn } = getItemsCount(size, turn);
     if (!sizePerTurn) {
       break;
     }
     const [min, max] = [turn, turn + sizePerTurn - 1];
     let [row, col] = [turn, turn];
-    let [dr, dc] = dir.right;
+    let [dr, dc] = clockwise ? dir.right : dir.down;
 
     for (let i = itemsPerTurn; i; i -= 1, elem += 1, row += dr, col += dc) {
       if (row === min && col === max) {
-        [dr, dc] = dir.down;
+        [dr, dc] = clockwise ? dir.down : dir.left;
       } else if (row === max && col === max) {
-        [dr, dc] = dir.left;
+        [dr, dc] = clockwise ? dir.left : dir.up;
       } else if (row === max && col === min) {
-        [dr, dc] = dir.up;
+        [dr, dc] = clockwise ? dir.up : dir.right;
       }
       mx[row][col] = elem;
     }
@@ -320,7 +322,7 @@ function getSpiralMatrix(size) {
  */
 function rotateMatrix(matrix) {
   for (let turn = 0, mx = matrix, sz = mx[0]?.length; ; turn += 1) {
-    const { sizePerTurn } = mxUtils.getItemsCount(sz, turn);
+    const { sizePerTurn } = getItemsCount(sz, turn);
     if (!sizePerTurn) {
       break;
     }
@@ -404,7 +406,7 @@ function sortByAsc(arr) {
  *  '012345', 3 => '024135' => '043215' => '031425'
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
-function shuffleChar(str, iterations) {
+function shuffleChar(str, iterations, useCache = true) {
   let res = str;
   let iters = iterations;
   const len = str.length;
@@ -415,13 +417,19 @@ function shuffleChar(str, iterations) {
   iters %= me.fullCycle[len] ?? Infinity;
 
   for (let i = 1; i <= iters; i += 1) {
-    res = strUtils.shuffle(res);
+    res = shuffle(res);
 
     if (res === str) {
       me.fullCycle[len] = i;
-      return shuffled[iters % i];
+      iters %= i;
+      i = 0;
+      if (useCache) {
+        return shuffled[iters];
+      }
     }
-    shuffled[i] = res;
+    if (useCache) {
+      shuffled[i] = res;
+    }
   }
   return res;
 }

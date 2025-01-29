@@ -179,8 +179,8 @@ function convertNumberToString(str) {
  *  'qweqwe'    => false
  */
 function isPalindrome(str) {
-  for (let i = str.length - 1, j = 0; i >= 0; i -= 1, j += 1) {
-    if (str[i] !== str[j]) {
+  for (let i = 0; i < Math.trunc(str.length / 2) - 1; i += 1) {
+    if (str[i] !== str[str.length - i - 1]) {
       return false;
     }
   }
